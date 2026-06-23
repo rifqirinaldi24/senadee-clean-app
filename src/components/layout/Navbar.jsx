@@ -44,6 +44,13 @@ export default function Navbar() {
               Artikel
             </Link>
             <Link
+              to="/kenali-tubuhmu"
+              className="font-brand text-senadee-dark hover:text-senadee-primary font-bold transition-colors flex items-center gap-1"
+            >
+              <span className="material-symbols-outlined text-[18px]">vital_signs</span>
+              Kenali Tubuhmu
+            </Link>
+            <Link
               to="/"
               className="font-brand text-senadee-dark hover:text-senadee-primary font-bold transition-colors"
             >
@@ -93,6 +100,14 @@ export default function Navbar() {
                 className="px-4 py-3 rounded-xl text-sm font-brand font-bold text-senadee-dark hover:text-senadee-primary transition-colors"
               >
                 Artikel
+              </Link>
+              <Link
+                to="/kenali-tubuhmu"
+                onClick={() => setIsMenuOpen(false)}
+                className="px-4 py-3 rounded-xl text-sm font-brand font-bold text-senadee-dark hover:text-senadee-primary transition-colors flex items-center gap-2"
+              >
+                <span className="material-symbols-outlined text-[18px]">vital_signs</span>
+                Kenali Tubuhmu
               </Link>
               <Link
                 to="/"

@@ -8,7 +8,7 @@ export default function HumanVerifiedBadge({ size = 'default' }) {
   return (
     <span
       id="human-verified-badge"
-      className={`inline-flex items-center ${sizes[size]} font-semibold rounded-full bg-gradient-to-r from-primary-container to-tertiary text-white shadow-md shadow-primary-container/20`}
+      className={`inline-flex items-center whitespace-nowrap ${sizes[size]} font-semibold rounded-full bg-gradient-to-r from-primary-container to-tertiary text-white shadow-md shadow-primary-container/20`}
     >
       <svg
         xmlns="http://www.w3.org/2000/svg"

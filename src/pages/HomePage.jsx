@@ -3,6 +3,7 @@ import SEOHead from '../components/seo/SEOHead';
 import SearchBar from '../components/ui/SearchBar';
 import PillarNav from '../components/ui/PillarNav';
 import ArticleCard from '../components/ui/ArticleCard';
+import KenaliTubuhmuWidget from '../components/ui/KenaliTubuhmuWidget';
 import { articles as hardcodedArticles, getFeaturedArticles, getAllPublishedArticles, PILLARS } from '../data/articles';
 
 export default function HomePage() {
@@ -88,15 +89,6 @@ export default function HomePage() {
                 {pillar.name}
               </h3>
               <p className="text-xs text-on-surface-variant line-clamp-2 hidden sm:block">{pillar.description}</p>
-              <div className="mt-2 flex items-center gap-1">
-                <div className="h-1.5 rounded-full bg-surface-container flex-1 overflow-hidden">
-                  <div
-                    className="h-full rounded-full bg-gradient-to-r from-primary-container to-tertiary-container transition-all duration-500"
-                    style={{ width: `${pillar.percentage}%` }}
-                  />
-                </div>
-                <span className="text-xs text-outline font-medium">{pillar.percentage}%</span>
-              </div>
             </button>
           ))}
         </div>
@@ -104,6 +96,11 @@ export default function HomePage() {
         {/* Filter Pills */}
         <PillarNav activeCategory={activeCategory} onCategoryChange={setActiveCategory} />
       </section>
+
+      {/* Interactive Tools Widget */}
+      <div className="max-w-6xl mx-auto px-4 sm:px-6">
+        <KenaliTubuhmuWidget />
+      </div>
 
       {/* Featured Articles */}
       {!activeCategory && (

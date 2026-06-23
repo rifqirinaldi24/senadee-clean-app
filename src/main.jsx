@@ -24,6 +24,13 @@ import DataParameterPage from './pages/cms/DataParameterPage.jsx';
 import LogProcessPage from './pages/cms/LogProcessPage.jsx';
 import MyProfilePage from './pages/cms/MyProfilePage.jsx';
 import ForceResetPasswordPage from './pages/cms/ForceResetPasswordPage.jsx';
+import ToolsIndexPage from './pages/tools/ToolsIndexPage.jsx';
+import BmiCalculator from './pages/tools/BmiCalculator.jsx';
+import CalorieCalculator from './pages/tools/CalorieCalculator.jsx';
+import SleepCalculator from './pages/tools/SleepCalculator.jsx';
+import WaterCalculator from './pages/tools/WaterCalculator.jsx';
+import StressTest from './pages/tools/StressTest.jsx';
+import ScrollToTop from './components/layout/ScrollToTop.jsx';
 import './index.css';
 
 createRoot(document.getElementById('root')).render(
@@ -31,11 +38,18 @@ createRoot(document.getElementById('root')).render(
     <HelmetProvider>
       <AuthProvider>
         <BrowserRouter>
+          <ScrollToTop />
           <Routes>
             {/* Public Portal Routes */}
             <Route element={<App />}>
               <Route path="/" element={<HomePage />} />
               <Route path="/article/:slug" element={<ArticleDetailPage />} />
+              <Route path="/kenali-tubuhmu" element={<ToolsIndexPage />} />
+              <Route path="/kenali-tubuhmu/bmi" element={<BmiCalculator />} />
+              <Route path="/kenali-tubuhmu/kalori" element={<CalorieCalculator />} />
+              <Route path="/kenali-tubuhmu/tidur" element={<SleepCalculator />} />
+              <Route path="/kenali-tubuhmu/air" element={<WaterCalculator />} />
+              <Route path="/kenali-tubuhmu/stres" element={<StressTest />} />
             </Route>
             
             {/* CMS Public Routes */}

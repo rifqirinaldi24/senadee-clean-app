@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import CMSHeader from '../../components/cms/CMSHeader';
 import Toast from '../../components/ui/Toast';
-import { getAllArticles, deleteArticle } from '../../data/articleStore';
+import { getAllArticles, deleteArticle, saveArticle } from '../../data/articleStore';
+import { addLog } from '../../data/logStore';
 import { formatDate } from '../../data/articles';
 import { useAuth } from '../../context/AuthContext';
 import ArticleEditorPage from './ArticleEditorPage';
@@ -13,6 +14,14 @@ export default function DraftListPage() {
   const [viewingArticle, setViewingArticle] = useState(null);
   const [deleteConfirm, setDeleteConfirm] = useState(null);
   const [successMsg, setSuccessMsg] = useState('');
+  
+  // Publish states
+  const [publishModal, setPublishModal] = useState(null);
+  const [publishConfirmAcc, setPublishConfirmAcc] = useState(false);
+  const [publishVerificationLink, setPublishVerificationLink] = useState('');
+  const [publishMode, setPublishMode] = useState('now');
+  const [publishDate, setPublishDate] = useState('');
+  
   const { user } = useAuth();
 
   const showSuccess = (msg) => {
@@ -41,7 +50,9 @@ export default function DraftListPage() {
   useEffect(() => {
     const handleKeyDown = (e) => {
       if (e.key === 'Escape') {
-        if (deleteConfirm) {
+        if (publishModal) {
+          handleClosePublish();
+        } else if (deleteConfirm) {
           setDeleteConfirm(null);
         } else if (viewingArticle) {
           setViewingArticle(null);
@@ -54,7 +65,7 @@ export default function DraftListPage() {
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [deleteConfirm, viewingArticle, editingId]);
+  }, [deleteConfirm, viewingArticle, editingId, publishModal]);
 
   const handleOpenEditor = (id) => {
     setEditingId(id);
@@ -105,6 +116,49 @@ export default function DraftListPage() {
       setViewingArticle(article);
       document.body.style.overflow = 'hidden';
     }
+  };
+
+  const handleOpenPublish = (article, e) => {
+    e.stopPropagation();
+    setPublishModal(article);
+    setPublishConfirmAcc(false);
+    setPublishVerificationLink('');
+    setPublishMode('now');
+    setPublishDate('');
+    document.body.style.overflow = 'hidden';
+  };
+
+  const handleClosePublish = () => {
+    setPublishModal(null);
+    document.body.style.overflow = '';
+  };
+
+  const handleConfirmPublish = () => {
+    if (!publishModal) return;
+    if (!publishConfirmAcc) return;
+    if (!publishVerificationLink) return;
+
+    const updatedArticle = {
+      ...publishModal,
+      isVerified: true, // Auto verified via Doctor ACC
+      verificationLink: publishVerificationLink,
+      status: publishMode === 'schedule' ? 'scheduled' : 'published',
+      date: publishMode === 'schedule' ? (publishDate || new Date().toISOString().split('T')[0]) : new Date().toISOString().split('T')[0],
+      scheduledTimestamp: publishMode === 'schedule' ? new Date(publishDate).getTime() : Date.now()
+    };
+
+    saveArticle(updatedArticle);
+    
+    addLog({
+      action: publishMode === 'schedule' ? 'Schedule Publish' : 'Publish',
+      articleTitle: updatedArticle.title,
+      actor: user?.name || 'Unknown',
+      status: 'Success'
+    });
+
+    showSuccess(publishMode === 'schedule' ? 'Artikel Berhasil Dijadwalkan' : 'Artikel Berhasil Dipublish');
+    handleClosePublish();
+    refreshDrafts();
   };
 
   const filteredDrafts = drafts.filter(article => 
@@ -173,6 +227,9 @@ export default function DraftListPage() {
                       <td className="p-4">{formatDate(article.updatedAt || new Date().toISOString())}</td>
                       <td className="p-4 text-right whitespace-nowrap">
                         <div className="flex justify-end gap-2">
+                          <button onClick={(e) => handleOpenPublish(article, e)} className="w-8 h-8 rounded-lg flex items-center justify-center text-on-surface-variant hover:bg-primary-container hover:text-primary transition-colors cursor-pointer" title="Publish Draft">
+                            <span className="material-symbols-outlined text-[18px]">publish</span>
+                          </button>
                           <button onClick={(e) => { e.stopPropagation(); handleOpenEditor(article.id); }} className="w-8 h-8 rounded-lg flex items-center justify-center text-on-surface-variant hover:bg-senadee-light hover:text-primary transition-colors cursor-pointer" title="Edit Draft">
                             <span className="material-symbols-outlined text-[18px]">edit</span>
                           </button>
@@ -288,6 +345,121 @@ export default function DraftListPage() {
               <button onClick={handleConfirmDelete}
                 className="px-5 py-2.5 bg-red-600 text-white rounded-xl font-label-md text-label-md font-semibold hover:bg-red-700 transition-colors cursor-pointer">
                 Ya, Hapus
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* PUBLISH MODAL */}
+      {publishModal && (
+        <div className="fixed inset-0 z-[120] bg-black/40 backdrop-blur-sm flex items-center justify-center p-4 animate-fade-in" onClick={handleClosePublish}>
+          <div className="bg-surface rounded-2xl shadow-2xl w-full max-w-md border border-border-muted overflow-hidden flex flex-col" onClick={e => e.stopPropagation()}>
+            <div className="flex items-center justify-between px-6 py-4 border-b border-border-muted bg-surface-container-low/50">
+              <h3 className="font-headline-sm text-headline-sm font-bold text-on-surface flex items-center gap-2">
+                <span className="material-symbols-outlined text-primary">rocket_launch</span>
+                Publikasi Artikel
+              </h3>
+              <button onClick={handleClosePublish} className="p-1.5 rounded-lg hover:bg-surface-container transition-colors cursor-pointer">
+                <span className="material-symbols-outlined">close</span>
+              </button>
+            </div>
+            
+            <div className="p-6 flex flex-col gap-6">
+              <div>
+                <p className="font-label-md text-label-md font-bold text-on-surface mb-1">Judul Artikel:</p>
+                <p className="font-body-sm text-body-sm text-on-surface-variant truncate">{publishModal.title}</p>
+              </div>
+
+              {/* URL Bukti Verification */}
+              <div className="flex flex-col gap-2">
+                <label className="font-label-md text-label-md font-bold text-on-surface flex items-center gap-2">
+                  <span className="material-symbols-outlined text-[18px]">link</span>
+                  Link Bukti Verifikasi *
+                </label>
+                <input 
+                  type="url" 
+                  value={publishVerificationLink}
+                  onChange={(e) => setPublishVerificationLink(e.target.value)}
+                  placeholder="URL Google Docs hasil review Dokter"
+                  className="w-full bg-surface border border-outline-variant rounded-lg font-body-md text-body-md p-3 focus:ring-2 focus:ring-primary outline-none"
+                />
+              </div>
+
+              {/* Toggle ACC */}
+              <div className={`p-4 rounded-xl border ${publishVerificationLink ? 'bg-primary-fixed/30 border-primary-container' : 'bg-surface-dim border-border-muted opacity-60'} flex items-center justify-between gap-4 transition-all`}>
+                <div className="flex-1">
+                  <label className="font-label-md text-label-md text-on-surface block mb-1 font-bold" htmlFor="accVerified">
+                    ACC Dokter
+                  </label>
+                  <p className="font-body-sm text-[12px] text-on-surface-variant leading-tight">
+                    Saya mengonfirmasi artikel ini telah di-ACC Dokter melalui link di atas.
+                  </p>
+                </div>
+                <div className="relative inline-block w-12 flex-shrink-0 align-middle select-none transition duration-200 ease-in mt-1">
+                  <input
+                    type="checkbox"
+                    id="accVerified"
+                    checked={publishConfirmAcc}
+                    disabled={!publishVerificationLink}
+                    onChange={(e) => setPublishConfirmAcc(e.target.checked)}
+                    className={`toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 appearance-none z-10 transition-transform duration-200 ${!publishVerificationLink ? 'cursor-not-allowed opacity-60' : 'cursor-pointer border-border-muted'}`}
+                    style={publishConfirmAcc ? { right: 0, borderColor: '#006a69' } : {}}
+                  />
+                  <label
+                    htmlFor="accVerified"
+                    className={`toggle-label block overflow-hidden h-6 rounded-full transition-colors ${!publishVerificationLink ? 'cursor-not-allowed opacity-60' : 'cursor-pointer'}`}
+                    style={publishConfirmAcc ? { backgroundColor: '#0ea5a4' } : { backgroundColor: '#e2e7ff' }}
+                  ></label>
+                </div>
+              </div>
+
+              {/* Publish Mode */}
+              <div className="flex flex-col gap-3">
+                <label className="font-label-md text-label-md font-bold text-on-surface flex items-center gap-2 mb-1">
+                  <span className="material-symbols-outlined text-[18px]">calendar_clock</span>
+                  Jadwal Tayang
+                </label>
+                <div className="flex items-center gap-2 cursor-pointer" onClick={() => setPublishMode('now')}>
+                  <div className={`w-4 h-4 rounded-full border flex items-center justify-center ${publishMode === 'now' ? 'border-primary' : 'border-outline-variant'}`}>
+                    {publishMode === 'now' && <div className="w-2 h-2 rounded-full bg-primary"></div>}
+                  </div>
+                  <span className="font-body-sm text-body-sm text-on-surface">Publish Sekarang</span>
+                </div>
+                
+                <div className="flex items-center gap-2 cursor-pointer" onClick={() => setPublishMode('schedule')}>
+                  <div className={`w-4 h-4 rounded-full border flex items-center justify-center ${publishMode === 'schedule' ? 'border-primary' : 'border-outline-variant'}`}>
+                    {publishMode === 'schedule' && <div className="w-2 h-2 rounded-full bg-primary"></div>}
+                  </div>
+                  <span className="font-body-sm text-body-sm text-on-surface">Terjadwal</span>
+                </div>
+
+                {publishMode === 'schedule' && (
+                  <input 
+                    type="datetime-local" 
+                    value={publishDate}
+                    onChange={(e) => setPublishDate(e.target.value)}
+                    className="mt-2 w-full bg-surface border border-outline-variant rounded-lg font-body-sm text-body-sm p-3 focus:ring-2 focus:ring-primary outline-none"
+                  />
+                )}
+              </div>
+
+            </div>
+
+            <div className="px-6 py-4 border-t border-border-muted bg-surface-container-low/50 flex justify-end gap-3">
+              <button onClick={handleClosePublish} className="px-5 py-2.5 border border-border-muted text-on-surface rounded-xl font-label-md text-label-md hover:bg-surface-container-low transition-colors cursor-pointer">
+                Batal
+              </button>
+              <button 
+                onClick={handleConfirmPublish} 
+                disabled={!publishConfirmAcc || !publishVerificationLink || (publishMode === 'schedule' && !publishDate)}
+                className={`px-5 py-2.5 rounded-xl font-label-md text-label-md font-semibold flex items-center gap-2 transition-colors ${
+                  publishConfirmAcc && publishVerificationLink && (publishMode === 'now' || publishDate)
+                    ? 'bg-primary text-on-primary hover:bg-primary/90 cursor-pointer'
+                    : 'bg-surface-dim text-on-surface-variant cursor-not-allowed opacity-50'
+                }`}
+              >
+                Konfirmasi & Publish
               </button>
             </div>
           </div>

@@ -385,7 +385,11 @@ export function getAllPublishedArticles() {
     const stored = localStorage.getItem('senadee_articles');
     if (stored) {
       const allStored = JSON.parse(stored);
-      const cmsPublished = allStored.filter(a => a.status === 'published');
+      const now = Date.now();
+      const cmsPublished = allStored.filter(a => 
+        a.status === 'published' || 
+        (a.status === 'scheduled' && a.scheduledTimestamp && a.scheduledTimestamp <= now)
+      );
       // Merge: CMS articles override hardcoded ones with same id
       const hardcodedIds = hardcoded.map(a => a.id);
       const uniqueCms = cmsPublished.filter(a => !hardcodedIds.includes(a.id));

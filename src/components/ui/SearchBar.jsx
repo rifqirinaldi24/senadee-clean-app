@@ -1,18 +1,28 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { articles } from '../../data/articles';
+import Fuse from 'fuse.js';
+import { getAllPublishedArticles } from '../../data/articles';
 
 export default function SearchBar() {
   const [query, setQuery] = useState('');
   const [isFocused, setIsFocused] = useState(false);
   const navigate = useNavigate();
 
+  const publishedArticles = useMemo(() => getAllPublishedArticles(), []);
+  
+  const fuse = useMemo(() => {
+    return new Fuse(publishedArticles, {
+      keys: [
+        { name: 'title', weight: 0.6 },
+        { name: 'excerpt', weight: 0.3 },
+        { name: 'category', weight: 0.1 }
+      ],
+      threshold: 0.4,
+    });
+  }, [publishedArticles]);
+
   const filteredArticles = query.length >= 2
-    ? articles.filter(
-        (article) =>
-          article.title.toLowerCase().includes(query.toLowerCase()) ||
-          article.excerpt.toLowerCase().includes(query.toLowerCase())
-      ).slice(0, 5)
+    ? fuse.search(query).map(result => result.item).slice(0, 5)
     : [];
 
   const handleSelect = (slug) => {

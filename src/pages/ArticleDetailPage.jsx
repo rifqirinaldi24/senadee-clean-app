@@ -6,13 +6,16 @@ import TakeawaysBox from '../components/ui/TakeawaysBox';
 import { getArticleBySlug, getPillarById, formatDate } from '../data/articles';
 import { formatReadingTime } from '../utils/readingTime';
 import { marked } from 'marked';
+import StickyTableOfContents from '../components/ui/StickyTableOfContents';
+import RelatedArticles from '../components/ui/RelatedArticles';
 
 marked.use({
   renderer: {
     heading(text, level) {
-      if (level === 2) return `<h2 class="text-xl sm:text-2xl font-heading font-bold text-on-surface mt-10 mb-4 flex items-start gap-3">${text}</h2>`;
-      if (level === 3) return `<h3 class="text-lg sm:text-xl font-heading font-bold text-on-surface mt-8 mb-3">${text}</h3>`;
-      return `<h${level}>${text}</h${level}>`;
+      const id = text.toLowerCase().replace(/[^\w\u00C0-\u024F]+/g, '-');
+      if (level === 2) return `<h2 id="${id}" class="text-xl sm:text-2xl font-heading font-bold text-on-surface mt-10 mb-4 flex items-start gap-3 scroll-mt-24">${text}</h2>`;
+      if (level === 3) return `<h3 id="${id}" class="text-lg sm:text-xl font-heading font-bold text-on-surface mt-8 mb-3 scroll-mt-24">${text}</h3>`;
+      return `<h${level} id="${id}" class="scroll-mt-24">${text}</h${level}>`;
     },
     paragraph(text) {
       return `<p class="mb-6">${text}</p>`;
@@ -124,63 +127,91 @@ export default function ArticleDetailPage() {
               </figure>
             )}
 
-            {/* Author & Reviewer Info */}
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6 py-6 border-y border-surface-container bg-surface-container-lowest">
-              <div className="flex flex-wrap items-center gap-x-8 gap-y-4">
-                {/* Author */}
-                <div className="flex flex-col gap-1">
-                  <span className="text-xs font-bold text-on-surface-variant uppercase tracking-wider">Ditulis Oleh</span>
-                  <div className="flex items-center gap-2">
-                    <span className="material-symbols-outlined text-primary text-[18px]">edit_document</span>
-                    <span className="text-sm font-semibold text-on-surface">{article.author}</span>
-                  </div>
-                </div>
-
-                {/* Reviewer */}
-                {article.reviewer && (
-                  <div className="flex flex-col gap-1">
-                    <span className="text-xs font-bold text-on-surface-variant uppercase tracking-wider">Ditinjau Oleh</span>
-                    <div className="flex items-center gap-2">
-                      <span className="material-symbols-outlined text-secondary text-[18px]">stethoscope</span>
-                      <span className="text-sm font-semibold text-on-surface">dr. {article.reviewer}</span>
+              {/* Author & Reviewer Info */}
+              <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-6 py-6 border-y border-surface-container bg-surface-container-lowest mt-4 mb-8">
+                <div className="flex flex-col sm:flex-row flex-wrap gap-6 sm:gap-10">
+                  {/* Author */}
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-full bg-primary-container text-primary flex items-center justify-center font-bold text-sm font-heading">
+                      {article.author?.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase()}
+                    </div>
+                    <div className="flex flex-col">
+                      <span className="text-xs font-bold text-on-surface-variant uppercase tracking-wider mb-0.5">Ditulis Oleh</span>
+                      <span className="text-sm font-bold text-on-surface">{article.author}</span>
                     </div>
                   </div>
-                )}
-
-                {/* Date */}
-                <div className="flex flex-col gap-1">
-                  <span className="text-xs font-bold text-on-surface-variant uppercase tracking-wider">Terakhir Diperbarui</span>
-                  <div className="flex items-center gap-2">
-                    <span className="material-symbols-outlined text-tertiary text-[18px]">calendar_today</span>
-                    <span className="text-sm font-semibold text-on-surface">{formatDate(article.date)}</span>
+  
+                  {/* Reviewer */}
+                  {article.reviewer && (
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-full bg-tertiary-container text-tertiary flex items-center justify-center font-bold text-sm font-heading">
+                        {article.reviewer?.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase()}
+                      </div>
+                      <div className="flex flex-col">
+                        <span className="text-xs font-bold text-on-surface-variant uppercase tracking-wider mb-0.5">Ditinjau Oleh</span>
+                        <span className="text-sm font-bold text-on-surface">dr. {article.reviewer}</span>
+                      </div>
+                    </div>
+                  )}
+  
+                  {/* Date */}
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-full bg-surface-container text-on-surface flex items-center justify-center">
+                      <span className="material-symbols-outlined text-[18px]">calendar_today</span>
+                    </div>
+                    <div className="flex flex-col">
+                      <span className="text-xs font-bold text-on-surface-variant uppercase tracking-wider mb-0.5">Diperbarui</span>
+                      <span className="text-sm font-bold text-on-surface">{formatDate(article.date)}</span>
+                    </div>
                   </div>
                 </div>
+  
+                {/* Verified Badge */}
+                {article.isVerified && (
+                  <div className="shrink-0 flex items-center">
+                    <HumanVerifiedBadge size="default" />
+                  </div>
+                )}
               </div>
-
-              {/* Verified Badge */}
-              {article.isVerified && (
-                <div className="mt-2 lg:mt-0">
-                  <HumanVerifiedBadge />
-                </div>
-              )}
-            </div>
           </div>
         </header>
 
-        {/* Article Body */}
-        <div className="max-w-3xl mx-auto px-4 sm:px-6 py-10 sm:py-14">
-          <div className="flex-1 min-w-0">
-            {/* Article Content with Custom Markdown Renderer */}
-            <div className="prose-custom text-on-surface font-body text-base sm:text-lg leading-relaxed"
-                 dangerouslySetInnerHTML={{ __html: marked.parse(fullMarkdown) }}>
+        {/* Article Body Wrapper */}
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-10 sm:py-14">
+          <div className="flex flex-col lg:flex-row gap-10 xl:gap-16 items-start">
+            
+            {/* Left Sidebar: Sticky TOC */}
+            <div className="hidden lg:block lg:w-1/4 xl:w-[280px] shrink-0 sticky top-28">
+              <StickyTableOfContents markdownContent={fullMarkdown} />
             </div>
+
+            {/* Main Article Content */}
+            <div className="flex-1 min-w-0 max-w-3xl w-full">
+              {/* Article Content with Custom Markdown Renderer */}
+              <div className="prose-custom text-on-surface font-body text-base sm:text-lg leading-relaxed"
+                   dangerouslySetInnerHTML={{ __html: marked.parse(fullMarkdown) }}>
+              </div>
 
               {/* Actionable Takeaways */}
               <TakeawaysBox takeaways={article.takeaways} />
 
+              {/* References */}
+              {article.references && (
+                <div className="mt-12 p-5 sm:p-6 bg-surface-container-lowest border border-surface-container shadow-sm rounded-2xl">
+                  <h3 className="font-heading font-bold text-xl text-on-surface mb-4 flex items-center gap-2">
+                    <span className="material-symbols-outlined text-primary">local_library</span>
+                    Referensi Medis
+                  </h3>
+                  <div 
+                    className="text-sm text-on-surface-variant font-body leading-relaxed [&>p]:mb-3 [&>p:last-child]:mb-0 [&>ul]:mb-0"
+                    dangerouslySetInnerHTML={{ __html: marked.parse(article.references) }}
+                  />
+                </div>
+              )}
+
               {/* FAQ Accordion Card */}
               {article.faq && article.faq.length > 0 && (
-                <div className="mt-12 bg-surface-container-lowest border border-surface-container shadow-sm rounded-2xl overflow-hidden">
+                <div className="mt-10 bg-surface-container-lowest border border-surface-container shadow-sm rounded-2xl overflow-hidden">
                   <div className="p-5 sm:p-6 border-b border-surface-container bg-surface-container-lowest">
                     <h3 className="font-heading font-bold text-xl text-on-surface flex items-center gap-2">
                       <span className="material-symbols-outlined text-primary">live_help</span>
@@ -214,19 +245,6 @@ export default function ArticleDetailPage() {
                 </div>
               )}
 
-              {/* References */}
-              {article.references && (
-                <div className="mt-10 p-5 bg-surface-container-low rounded-2xl border border-surface-container">
-                  <h4 className="font-heading font-bold text-lg text-on-surface mb-3 flex items-center gap-2">
-                    <span className="material-symbols-outlined text-on-surface-variant">book</span>
-                    Referensi
-                  </h4>
-                  <div className="text-sm text-on-surface-variant whitespace-pre-line font-body leading-relaxed pl-7 -indent-7">
-                    {article.references}
-                  </div>
-                </div>
-              )}
-
               {/* Article Reference ID (Opsi B) */}
               {article.articleId && (
                 <div className="mt-10 pt-8 border-t border-surface-container flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -235,23 +253,26 @@ export default function ArticleDetailPage() {
                     Ref: {article.articleId}
                   </div>
                   
-                  {/* Back button */}
-                  <button
-                    onClick={() => navigate(-1)}
-                    className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-brand font-bold text-on-surface-variant hover:text-primary hover:bg-primary-fixed border border-surface-container hover:border-primary-fixed transition-all cursor-pointer"
-                  >
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4 h-4">
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 19.5 3 12m0 0 7.5-7.5M3 12h18" />
-                    </svg>
-                    Kembali
-                  </button>
+                  {/* Share/Action Buttons Minimalist */}
+                  <div className="flex items-center gap-2">
+                    <button className="w-10 h-10 rounded-full flex items-center justify-center bg-surface-container-low text-on-surface-variant hover:bg-primary hover:text-white transition-colors">
+                      <span className="material-symbols-outlined text-[20px]">share</span>
+                    </button>
+                    <button className="w-10 h-10 rounded-full flex items-center justify-center bg-surface-container-low text-on-surface-variant hover:bg-secondary hover:text-white transition-colors">
+                      <span className="material-symbols-outlined text-[20px]">bookmark</span>
+                    </button>
+                  </div>
                 </div>
               )}
 
+              {/* Related Articles */}
+              <RelatedArticles currentArticleId={article.id} currentCategory={article.category} />
+
+            </div>
           </div>
         </div>
       </article>
     </>
   );
-}
 
+}

@@ -54,9 +54,9 @@ export default function ArticleEditorPage({ isModal = false, editId: propEditId 
   const [articleType, setArticleType] = useState('spesifik');
   const [title, setTitle] = useState('');
   const [slug, setSlug] = useState('');
-  const [isVerified, setIsVerified] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState('');
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+
   const [categories, setCategories] = useState([]);
   const [doctors, setDoctors] = useState([]);
   const [imageUrl, setImageUrl] = useState(null);
@@ -100,13 +100,8 @@ export default function ArticleEditorPage({ isModal = false, editId: propEditId 
     return faqs.map(f => `Q: ${f.question}\nA: ${f.answer}`).join('\n\n');
   };
 
-  // Right column states
-  const [publishMode, setPublishMode] = useState('now'); // 'now' or 'schedule'
-  
   const authorName = user?.penName || user?.name || 'Unknown Writer';
-  const [publishDate, setPublishDate] = useState('');
-  const [originalStatus, setOriginalStatus] = useState('');
-
+  
   const [toastMessage, setToastMessage] = useState('');
 
   useEffect(() => {
@@ -131,9 +126,6 @@ export default function ArticleEditorPage({ isModal = false, editId: propEditId 
         setReferencesText(articleToEdit.references || '');
         setFaqText(formatFaqText(articleToEdit.faq || []));
         setReviewer(articleToEdit.reviewer || '');
-        setIsVerified(articleToEdit.isVerified || false);
-        setOriginalStatus(articleToEdit.status || '');
-        setPublishMode(articleToEdit.status === 'scheduled' ? 'schedule' : 'now');
       }
     }
   }, [internalEditId]);
@@ -199,44 +191,24 @@ export default function ArticleEditorPage({ isModal = false, editId: propEditId 
     }
   };
 
-  const handlePublish = () => {
-    if (!isVerified) return;
+
+
+  const handleSmartExport = async () => {
+    const htmlContent = `<h1>${title || 'Untitled'}</h1>\n${sectionsToMarkdown(markdownToSections(currentContent)).split('\\n\\n').map(p => p.startsWith('#') ? `<h2>${p.replace(/#/g, '').trim()}</h2>` : `<p>${p}</p>`).join('\\n')}\n<hr/>\n<h3>FAQ</h3><p>${faqText}</p>\n<h3>Referensi</h3><p>${referencesText}</p>`;
     
-    if (!title || !selectedCategory) {
-      setToastMessage('❌ Judul dan Kategori tidak boleh kosong!');
-      return;
-    }
-    
-    const data = {
-      ...(internalEditId ? { id: parseInt(internalEditId) } : {}),
-      title: title || 'Untitled Article',
-      slug: slug || 'untitled-article',
-      author: authorName,
-      reviewer: reviewer,
-      status: publishMode === 'schedule' ? 'scheduled' : 'published',
-      category: selectedCategory || 'general',
-      readingTime: 5,
-      date: publishMode === 'schedule' ? (publishDate || new Date().toISOString().split('T')[0]) : new Date().toISOString().split('T')[0],
-      isVerified: true,
-      imageUrl: imageUrl,
-      references: referencesText,
-      faq: parseFaqText(faqText),
-      content: markdownToSections(currentContent)
-    };
-    saveArticle(data);
-    
-    // Create log for publish
-    addLog({
-      action: publishMode === 'schedule' ? 'Schedule Publish' : 'Publish',
-      articleTitle: data.title,
-      actor: user?.name || 'Unknown',
-      status: 'Success'
-    });
-    
-    if (isModal && onClose) {
-      onClose(true); // true = indicate success/refresh needed
-    } else {
-      navigate('/cms/articles');
+    try {
+      const blobHtml = new Blob([htmlContent], { type: "text/html" });
+      const blobText = new Blob([htmlContent.replace(/<[^>]+>/g, '')], { type: "text/plain" });
+      const data = [new ClipboardItem({ ["text/html"]: blobHtml, ["text/plain"]: blobText })];
+      await navigator.clipboard.write(data);
+      
+      setToastMessage('✅ Artikel disalin! Membuka Google Docs...');
+      setTimeout(() => {
+        window.open('https://docs.google.com/document/create', '_blank');
+      }, 1000);
+    } catch (err) {
+      console.error("Gagal menyalin: ", err);
+      setToastMessage('❌ Gagal menyalin ke clipboard. Coba lagi.');
     }
   };
 
@@ -365,24 +337,13 @@ Output Anda harus HANYA berisi Markdown murni tanpa basa-basi pembuka/penutup, t
           Batal
         </button>
       )}
-      {originalStatus !== 'published' && (
-        <button onClick={handleSaveDraft} className="px-4 py-2 border border-border-muted text-on-surface font-label-md text-label-md rounded-lg hover:bg-surface-container-low transition-colors duration-200 cursor-pointer">
-          Save Draft
-        </button>
-      )}
-      <button
-        onClick={handlePublish}
-        disabled={!isVerified}
-        className={`px-4 py-2 font-label-md text-label-md rounded-lg transition-colors duration-200 flex items-center gap-2 ${
-          isVerified 
-            ? 'bg-primary text-on-primary hover:opacity-90 cursor-pointer' 
-            : 'bg-surface-dim text-on-surface-variant opacity-50 cursor-not-allowed'
-        }`}
-      >
-        <span className="material-symbols-outlined text-[18px]">
-          {isVerified ? 'publish' : 'lock'}
-        </span>
-        Publish
+      <button onClick={handleSmartExport} className="px-4 py-2 border border-border-muted text-on-surface font-label-md text-label-md rounded-lg hover:bg-surface-container-low transition-colors duration-200 cursor-pointer flex items-center gap-2">
+        <span className="material-symbols-outlined text-[18px]">description</span>
+        Export
+      </button>
+
+      <button onClick={handleSaveDraft} className="px-4 py-2 bg-primary text-on-primary font-label-md text-label-md rounded-lg hover:opacity-90 transition-colors duration-200 cursor-pointer">
+        Save Draft
       </button>
     </div>
   );
@@ -390,6 +351,9 @@ Output Anda harus HANYA berisi Markdown murni tanpa basa-basi pembuka/penutup, t
   return (
     <div className={`flex flex-col relative ${isModal ? 'h-full overflow-y-auto' : ''}`}>
       <Toast message={toastMessage} onClose={() => setToastMessage('')} />
+
+
+
       
       {isModal ? (
         <div className="sticky top-0 z-30 bg-surface-container-low/80 backdrop-blur-xl border-b border-border-muted px-6 py-4 flex items-center justify-between">
@@ -616,72 +580,6 @@ Output Anda harus HANYA berisi Markdown murni tanpa basa-basi pembuka/penutup, t
 
         {/* --- RIGHT COLUMN --- */}
         <aside className="w-full lg:w-80 flex-shrink-0 flex flex-col gap-6">
-          
-          {/* Verification Guardrail (CRITICAL) */}
-          <div className="bg-surface-container-lowest rounded-xl border border-border-muted shadow-[0_4px_20px_rgba(14,165,164,0.02)] overflow-hidden">
-            <div className="bg-surface-container-low p-4 border-b border-border-muted flex items-center gap-2">
-              <span className="material-symbols-outlined text-primary" style={{ fontVariationSettings: "'FILL' 1" }}>verified_user</span>
-              <h3 className="font-label-md text-label-md font-bold text-on-surface">Medical Verification</h3>
-            </div>
-            <div className="p-5 flex items-start justify-between gap-4">
-              <div className="flex-1">
-                <label className="font-label-md text-label-md text-on-surface block mb-1 font-bold" htmlFor="humanVerified">
-                  Verified Badge
-                </label>
-                <p className="font-body-sm text-body-sm text-on-surface-variant leading-relaxed">
-                  Required for publishing.
-                </p>
-              </div>
-              <div className="relative inline-block w-12 flex-shrink-0 align-middle select-none transition duration-200 ease-in mt-1">
-                <input
-                  type="checkbox"
-                  id="humanVerified"
-                  checked={isVerified}
-                  disabled={user?.role?.toLowerCase() !== 'writer'}
-                  onChange={(e) => setIsVerified(e.target.checked)}
-                  className={`toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 appearance-none z-10 transition-transform duration-200 ${user?.role?.toLowerCase() !== 'writer' ? 'cursor-not-allowed opacity-60' : 'cursor-pointer border-border-muted'}`}
-                  style={isVerified ? { right: 0, borderColor: user?.role?.toLowerCase() !== 'writer' ? '#ccc' : '#006a69' } : {}}
-                />
-                <label
-                  htmlFor="humanVerified"
-                  className={`toggle-label block overflow-hidden h-6 rounded-full transition-colors ${user?.role?.toLowerCase() !== 'writer' ? 'cursor-not-allowed opacity-60' : 'cursor-pointer'}`}
-                  style={isVerified ? { backgroundColor: user?.role?.toLowerCase() !== 'writer' ? '#999' : '#0ea5a4' } : { backgroundColor: '#e2e7ff' }}
-                ></label>
-              </div>
-            </div>
-          </div>
-
-          {/* Date Publish */}
-          <div className="bg-surface-container-lowest rounded-xl border border-border-muted p-5">
-            <h3 className="font-label-md text-label-md font-bold text-on-surface mb-4 flex items-center gap-2">
-              <span className="material-symbols-outlined text-[20px]">calendar_today</span>
-              Publish Settings
-            </h3>
-            <div className="flex flex-col gap-3">
-              <div className="flex items-center gap-2 cursor-pointer" onClick={() => setPublishMode('now')}>
-                <div className={`w-4 h-4 rounded-full border flex items-center justify-center ${publishMode === 'now' ? 'border-primary' : 'border-outline-variant'}`}>
-                  {publishMode === 'now' && <div className="w-2 h-2 rounded-full bg-primary"></div>}
-                </div>
-                <span className="font-body-sm text-body-sm text-on-surface">Publish Now</span>
-              </div>
-              
-              <div className="flex items-center gap-2 cursor-pointer" onClick={() => setPublishMode('schedule')}>
-                <div className={`w-4 h-4 rounded-full border flex items-center justify-center ${publishMode === 'schedule' ? 'border-primary' : 'border-outline-variant'}`}>
-                  {publishMode === 'schedule' && <div className="w-2 h-2 rounded-full bg-primary"></div>}
-                </div>
-                <span className="font-body-sm text-body-sm text-on-surface">Schedule</span>
-              </div>
-
-              {publishMode === 'schedule' && (
-                <input 
-                  type="datetime-local" 
-                  value={publishDate}
-                  onChange={(e) => setPublishDate(e.target.value)}
-                  className="mt-2 w-full bg-surface border border-border-muted rounded-lg font-body-sm text-body-sm p-2 focus:ring-2 focus:ring-primary focus:border-transparent outline-none"
-                />
-              )}
-            </div>
-          </div>
 
           {/* Categorization */}
           <div className="bg-surface-container-lowest rounded-xl border border-border-muted p-5">

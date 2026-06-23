@@ -28,7 +28,7 @@ export default function ArticleListPage() {
   };
 
   const refreshArticles = () => {
-    const all = getAllArticles().filter(a => a.status === 'published');
+    const all = getAllArticles().filter(a => a.status === 'published' || a.status === 'scheduled');
     setArticles(all);
   };
 
