@@ -1,7 +1,7 @@
 import { useState, useMemo } from 'react';
 import SEOHead from '../components/seo/SEOHead';
 import SearchBar from '../components/ui/SearchBar';
-import PillarNav from '../components/ui/PillarNav';
+import { Link } from 'react-router-dom';
 import ArticleCard from '../components/ui/ArticleCard';
 import KenaliTubuhmuWidget from '../components/ui/KenaliTubuhmuWidget';
 import { articles as hardcodedArticles, getFeaturedArticles, getAllPublishedArticles, PILLARS } from '../data/articles';
@@ -70,6 +70,10 @@ export default function HomePage() {
             </h2>
             <p className="text-on-surface-variant">Temukan artikel berdasarkan 4 pilar konten utama kami</p>
           </div>
+          <Link to="/artikel" className="text-primary font-bold hover:text-primary-container transition-colors inline-flex items-center gap-1 group whitespace-nowrap text-sm sm:text-base">
+            Lihat Semua Artikel
+            <span className="material-symbols-outlined text-[20px] group-hover:translate-x-1 transition-transform">arrow_forward</span>
+          </Link>
         </div>
 
         {/* Pillar Cards */}
@@ -92,9 +96,6 @@ export default function HomePage() {
             </button>
           ))}
         </div>
-
-        {/* Filter Pills */}
-        <PillarNav activeCategory={activeCategory} onCategoryChange={setActiveCategory} />
       </section>
 
       {/* Interactive Tools Widget */}

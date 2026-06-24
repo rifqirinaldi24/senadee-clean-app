@@ -80,10 +80,16 @@ export default function CalorieCalculator() {
       <div className="bg-surface-container-lowest min-h-screen py-10 sm:py-14">
         <div className="max-w-2xl mx-auto px-4 sm:px-6">
           
-          <Link to="/kenali-tubuhmu" className="inline-flex items-center gap-2 text-sm font-bold text-on-surface-variant hover:text-primary transition-colors mb-8">
-            <span className="material-symbols-outlined text-[18px]">arrow_back</span>
-            Kembali ke Semua Alat
-          </Link>
+          <div className="flex flex-wrap items-center gap-2 sm:gap-4 mb-8 text-sm font-bold text-on-surface-variant">
+            <Link to="/" className="inline-flex items-center gap-1 hover:text-primary transition-colors">
+              <span className="material-symbols-outlined text-[18px]">home</span>
+              Beranda
+            </Link>
+            <span className="text-surface-container-high">/</span>
+            <Link to="/kenali-tubuhmu" className="inline-flex items-center gap-1 hover:text-primary transition-colors">
+              Semua Alat
+            </Link>
+          </div>
 
           <div className="flex items-center gap-4 mb-8">
             <div className="w-14 h-14 rounded-2xl flex items-center justify-center bg-orange-100 text-orange-600">
