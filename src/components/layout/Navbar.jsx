@@ -3,6 +3,7 @@ import { Link, useLocation } from 'react-router-dom';
 
 export default function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isAboutMenuOpen, setIsAboutMenuOpen] = useState(false);
   const location = useLocation();
   const isHome = location.pathname === '/';
 
@@ -30,7 +31,7 @@ export default function Navbar() {
           </Link>
 
           {/* Desktop Nav */}
-          <nav className="hidden md:flex items-center gap-6">
+          <nav className="hidden md:flex items-center gap-6 relative">
             <Link
               to="/"
               className="font-brand text-senadee-dark hover:text-senadee-primary font-bold transition-colors"
@@ -56,12 +57,38 @@ export default function Navbar() {
             >
               Komunitas
             </Link>
-            <Link
-              to="/"
-              className="font-brand text-senadee-dark hover:text-senadee-primary font-bold transition-colors"
-            >
-              Tentang Kita
-            </Link>
+            
+            {/* Dropdown Tentang Kita */}
+            <div className="relative group">
+              <button className="font-brand text-senadee-dark hover:text-senadee-primary font-bold transition-colors flex items-center gap-1 focus:outline-none">
+                Tentang Kita
+                <span className="material-symbols-outlined text-[18px] transition-transform duration-200 group-hover:rotate-180">expand_more</span>
+              </button>
+              
+              {/* Dropdown Menu */}
+              <div className="absolute top-full right-0 mt-2 w-48 bg-white rounded-2xl shadow-lg border border-surface-container-low opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 transform origin-top-right">
+                <div className="py-2 flex flex-col">
+                  <Link
+                    to="/tentang-kita/cerita-senadee"
+                    className="px-4 py-2 text-sm font-medium text-senadee-dark hover:bg-surface-container-low hover:text-primary transition-colors block"
+                  >
+                    Cerita Senadee
+                  </Link>
+                  <Link
+                    to="/tentang-kita/tim-pioneers"
+                    className="px-4 py-2 text-sm font-medium text-senadee-dark hover:bg-surface-container-low hover:text-primary transition-colors block"
+                  >
+                    Tim Pioneers
+                  </Link>
+                  <Link
+                    to="/tentang-kita/kemitraan"
+                    className="px-4 py-2 text-sm font-medium text-senadee-dark hover:bg-surface-container-low hover:text-primary transition-colors block"
+                  >
+                    Mari Bertumbuh Bersama
+                  </Link>
+                </div>
+              </div>
+            </div>
           </nav>
 
           {/* Mobile Menu Toggle */}
@@ -116,13 +143,44 @@ export default function Navbar() {
               >
                 Komunitas
               </Link>
-              <Link
-                to="/"
-                onClick={() => setIsMenuOpen(false)}
-                className="px-4 py-3 rounded-xl text-sm font-brand font-bold text-senadee-dark hover:text-senadee-primary transition-colors"
-              >
-                Tentang Kita
-              </Link>
+              
+              {/* Accordion Tentang Kita (Mobile) */}
+              <div>
+                <button
+                  onClick={() => setIsAboutMenuOpen(!isAboutMenuOpen)}
+                  className="w-full text-left flex items-center justify-between px-4 py-3 rounded-xl text-sm font-brand font-bold text-senadee-dark hover:text-senadee-primary transition-colors"
+                >
+                  <span>Tentang Kita</span>
+                  <span className={`material-symbols-outlined text-[18px] transition-transform duration-200 ${isAboutMenuOpen ? 'rotate-180' : ''}`}>
+                    expand_more
+                  </span>
+                </button>
+                {isAboutMenuOpen && (
+                  <div className="flex flex-col pl-8 pr-4 py-1 gap-1 border-l-2 border-surface-container-low ml-6 mb-2 mt-1">
+                    <Link
+                      to="/tentang-kita/cerita-senadee"
+                      onClick={() => setIsMenuOpen(false)}
+                      className="py-2 text-sm font-medium text-on-surface-variant hover:text-primary transition-colors"
+                    >
+                      Cerita Senadee
+                    </Link>
+                    <Link
+                      to="/tentang-kita/tim-pioneers"
+                      onClick={() => setIsMenuOpen(false)}
+                      className="py-2 text-sm font-medium text-on-surface-variant hover:text-primary transition-colors"
+                    >
+                      Tim Pioneers
+                    </Link>
+                    <Link
+                      to="/tentang-kita/kemitraan"
+                      onClick={() => setIsMenuOpen(false)}
+                      className="py-2 text-sm font-medium text-on-surface-variant hover:text-primary transition-colors"
+                    >
+                      Mari Bertumbuh Bersama
+                    </Link>
+                  </div>
+                )}
+              </div>
             </nav>
           </div>
         )}

@@ -30,6 +30,9 @@ import CalorieCalculator from './pages/tools/CalorieCalculator.jsx';
 import SleepCalculator from './pages/tools/SleepCalculator.jsx';
 import WaterCalculator from './pages/tools/WaterCalculator.jsx';
 import StressTest from './pages/tools/StressTest.jsx';
+import CeritaSenadeePage from './pages/about/CeritaSenadeePage.jsx';
+import TimPioneersPage from './pages/about/TimPioneersPage.jsx';
+import KemitraanPage from './pages/about/KemitraanPage.jsx';
 import ScrollToTop from './components/layout/ScrollToTop.jsx';
 import './index.css';
 
@@ -50,6 +53,9 @@ createRoot(document.getElementById('root')).render(
               <Route path="/kenali-tubuhmu/tidur" element={<SleepCalculator />} />
               <Route path="/kenali-tubuhmu/air" element={<WaterCalculator />} />
               <Route path="/kenali-tubuhmu/stres" element={<StressTest />} />
+              <Route path="/tentang-kita/cerita-senadee" element={<CeritaSenadeePage />} />
+              <Route path="/tentang-kita/tim-pioneers" element={<TimPioneersPage />} />
+              <Route path="/tentang-kita/kemitraan" element={<KemitraanPage />} />
             </Route>
             
             {/* CMS Public Routes */}
