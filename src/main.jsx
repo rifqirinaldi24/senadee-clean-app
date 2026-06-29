@@ -25,6 +25,7 @@ import LogProcessPage from './pages/cms/LogProcessPage.jsx';
 import MyProfilePage from './pages/cms/MyProfilePage.jsx';
 import ForceResetPasswordPage from './pages/cms/ForceResetPasswordPage.jsx';
 import ToolsIndexPage from './pages/tools/ToolsIndexPage.jsx';
+import HomePageEditor from './pages/cms/HomePageEditor.jsx';
 import BmiCalculator from './pages/tools/BmiCalculator.jsx';
 import CalorieCalculator from './pages/tools/CalorieCalculator.jsx';
 import SleepCalculator from './pages/tools/SleepCalculator.jsx';
@@ -107,6 +108,7 @@ createRoot(document.getElementById('root')).render(
             <Route element={<ProtectedRoute requiredPermission="settings" />}>
               <Route path="/cms" element={<CMSLayout />}>
                 <Route path="categories" element={<CategoryParameterPage />} />
+                <Route path="home-editor" element={<HomePageEditor />} />
                 <Route path="menu-order" element={<MenuOrderPage />} />
                 <Route path="parameters" element={<DataParameterPage />} />
               </Route>

@@ -2,13 +2,19 @@
 // categoryStore.js — CRUD Kategori Artikel (localStorage)
 // ============================================================
 
-const STORAGE_KEY = 'senadee_categories';
+const STORAGE_KEY = 'senadee_categories_v2';
 
 const DEFAULT_CATEGORIES = [
-  { id: 1, key: 'family-health', name: 'Kesehatan Keluarga', icon: '👨‍👩‍👧', color: '#ec4899', isActive: true, order: 1 },
-  { id: 2, key: 'nutrition', name: 'Nutrisi', icon: '🥗', color: '#f59e0b', isActive: true, order: 2 },
-  { id: 3, key: 'fitness', name: 'Fitness & Olahraga', icon: '🏃', color: '#3b82f6', isActive: true, order: 3 },
-  { id: 4, key: 'preventive-health', name: 'Kesehatan Preventif', icon: '🛡️', color: '#8b5cf6', isActive: true, order: 4 },
+  { id: 1, key: 'lifestyle', name: 'Gaya Hidup', icon: '🌿', color: '#10b981', isActive: true, order: 1 },
+  { id: 2, key: 'fitness', name: 'Kebugaran & Olahraga', icon: '🏃', color: '#3b82f6', isActive: true, order: 2 },
+  { id: 3, key: 'beauty', name: 'Kecantikan', icon: '✨', color: '#ec4899', isActive: true, order: 3 },
+  { id: 4, key: 'pregnancy', name: 'Kehamilan', icon: '🤰', color: '#f43f5e', isActive: true, order: 4 },
+  { id: 5, key: 'family', name: 'Keluarga', icon: '👨‍👩‍👧‍👦', color: '#8b5cf6', isActive: true, order: 5 },
+  { id: 6, key: 'health', name: 'Kesehatan', icon: '⚕️', color: '#0ea5e9', isActive: true, order: 6 },
+  { id: 7, key: 'elderly', name: 'Kesehatan Lansia', icon: '👴', color: '#64748b', isActive: true, order: 7 },
+  { id: 8, key: 'mental-health', name: 'Kesehatan Mental', icon: '🧠', color: '#a855f7', isActive: true, order: 8 },
+  { id: 9, key: 'nutrition', name: 'Nutrisi & Diet', icon: '🥗', color: '#f59e0b', isActive: true, order: 9 },
+  { id: 10, key: 'first-aid', name: 'Pertolongan Pertama', icon: '🚑', color: '#ef4444', isActive: true, order: 10 },
 ];
 
 function initialize() {

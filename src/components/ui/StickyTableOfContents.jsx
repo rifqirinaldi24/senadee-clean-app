@@ -1,6 +1,6 @@
 import { useEffect, useState, useMemo } from 'react';
 
-export default function StickyTableOfContents({ markdownContent }) {
+export default function StickyTableOfContents({ markdownContent, hasReferences, hasFaq }) {
   const [activeId, setActiveId] = useState('');
 
   const headings = useMemo(() => {
@@ -16,8 +16,16 @@ export default function StickyTableOfContents({ markdownContent }) {
       const id = text.toLowerCase().replace(/[^\w\u00C0-\u024F]+/g, '-');
       results.push({ id, text, level });
     }
+
+    if (hasReferences) {
+      results.push({ id: 'referensi', text: 'Referensi Medis', level: 2 });
+    }
+    if (hasFaq) {
+      results.push({ id: 'faq', text: 'Frequently Asked Questions', level: 2 });
+    }
+
     return results;
-  }, [markdownContent]);
+  }, [markdownContent, hasReferences, hasFaq]);
 
   useEffect(() => {
     // We want the header to be considered active when it's near the top of the viewport

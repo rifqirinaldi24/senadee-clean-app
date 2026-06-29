@@ -143,6 +143,11 @@ export default function ArticleEditorPage({ isModal = false, editId: propEditId 
   }, [isModal, onClose]);
 
   const handleSaveDraft = () => {
+    if (topic && title.trim().toLowerCase() === topic.trim().toLowerCase()) {
+      alert("Validasi Gagal: Keyword/Topik tidak boleh sama persis dengan Judul Artikel. Silakan ubah judulnya.");
+      return;
+    }
+
     const data = {
       ...(internalEditId ? { id: parseInt(internalEditId) } : {}),
       title: title || 'Untitled Draft',
@@ -262,6 +267,12 @@ Sebelum menulis, pahami apa yang sebenarnya ingin dicari pembaca dari keyword in
 2) Apa tindakan yang bisa dilakukan pembaca? 
 3) Kapan pembaca perlu bantuan medis?
 
+TONE OF VOICE & GAYA BAHASA (SANGAT PENTING):
+1. Humanis & Empati: Menulislah layaknya sahabat atau ahli kesehatan yang peduli. Tunjukkan empati pada kondisi pembaca.
+2. Santai namun Tegas: Bahasa harus mengalir ringan (santai) tapi tetap tegas/berwibawa saat memberi anjuran medis.
+3. Gunakan Analogi: Sederhanakan istilah medis rumit dengan analogi kehidupan sehari-hari agar gampang dipahami.
+4. Conversational: Tulis seolah sedang ngobrol dua arah dengan pembaca. Hindari kesan menggurui, kaku, atau gaya bahasa robotik/akademis.
+
 ATURAN POINT OF VIEW (POV) & SAPAAN:
 1. Analisis target pembaca dari topik di atas. Siapa yang akan membacanya?
 2. Jika topik tentang Kehamilan, Bayi, atau Anak: Gunakan sapaan "Bunda" atau "Ayah" karena yang membaca adalah orang tuanya.
@@ -272,8 +283,8 @@ ATURAN POINT OF VIEW (POV) & SAPAAN:
 
 WAJIB PATUHI ATURAN EDITORIAL BERIKUT:
 1. PANJANG ARTIKEL: ${wordCountRule}.
-2. DILARANG MEMBUAT JUDUL ARTIKEL DI DALAM TEKS: JANGAN menggunakan H1 (#) atau menulis judul di baris pertama. Tulisan harus langsung dimulai dengan paragraf Introduction.
-3. INTRODUCTION: Pada 100 kata pertama, Anda WAJIB memberikan jawaban singkat (40-60 kata) yang langsung menjawab keyword utama tanpa basa-basi. Intro ini berfungsi sebagai featured snippet Google.
+2. PENGGUNAAN JUDUL: Anda WAJIB meletakkan judul artikel HANYA di blok [JUDUL ARTIKEL]. DILARANG menulis ulang judul menggunakan H1 (#) di dalam [KONTEN ARTIKEL]. Bagian [KONTEN ARTIKEL] harus langsung dimulai dengan paragraf Introduction.
+3. INTRODUCTION: Buat paragraf pembuka (max 60 kata) yang sangat menarik (engaging) dan memancing rasa penasaran agar user membaca ke bawah. JANGAN berikan jawaban utuh/spoiler di paragraf ini. Keyword utama WAJIB ada di awal kalimat pertama. Seluruh teks Introduction WAJIB dicetak tebal (**bold**). DILARANG menuliskan kalimat CTA/ajakan seperti "Mari simak...", "Berikut adalah...", dll di akhir introduction, biarkan paragraf menggantung natural.
 4. PARAGRAF PENDEK: Tiap paragraf maksimal 2-3 kalimat (agar saat dibaca di mobile tidak lebih dari 3-4 baris). Gunakan Bullet Points jika menjelaskan langkah/ciri-ciri.
 5. PENUTUP: Paragraf terakhir WAJIB berisi ringkasan singkat artikel dan bagian 'Kapan Perlu ke Dokter'. Sebutkan dengan jelas tanda-tanda bahaya/kondisi yang memerlukan evaluasi medis lanjutan, disertai ajakan konsultasi (Contoh: "Segera periksakan diri ke dokter jika Anda mengalami...").
 6. TANDA BACA & BAHASA: DILARANG KERAS menggunakan tanda dash panjang (—) dan tiga bintang (***) di dalam kalimat. Gunakan koma atau titik dua. Pastikan semua istilah bahasa Inggris dicetak miring (*italic*).
@@ -283,12 +294,13 @@ WAJIB PATUHI ATURAN EDITORIAL BERIKUT:
 10. DISCLAIMER HERBAL: Jika topik membahas pengobatan herbal/alami, Anda WAJIB mencantumkan disclaimer ini persis: "Penggunaan herbal sebaiknya dikonsultasikan dengan dokter, terutama bila Anda memiliki penyakit kronis atau sedang mengonsumsi obat tertentu."
 
 STRUKTUR OUTPUT (PENTING!):
-Output Anda harus HANYA berisi Markdown murni tanpa basa-basi pembuka/penutup, terbagi dalam 3 bagian berurutan:
-1. [KONTEN ARTIKEL]: Isi artikel utama. Sekali lagi, langsung mulai dengan paragraf pembuka tanpa judul. Gunakan H2 (##) HANYA untuk subjudul.
-2. [FAQ]: Di akhir artikel, buat judul **FAQ**. Buat ${faqCountRule} yang relevan (tidak mengulang isi artikel). Formatnya:
+Output Anda harus HANYA berisi Markdown murni tanpa basa-basi pembuka/penutup, terbagi dalam 4 bagian berurutan:
+1. [JUDUL ARTIKEL]: Tuliskan 1 baris judul artikel yang sesuai dengan panduan SEO. Judul TIDAK BOLEH sama persis dengan keyword utama (${topic}).
+2. [KONTEN ARTIKEL]: Isi artikel utama. Langsung mulai dengan paragraf pembuka tanpa judul di dalam teks. Gunakan H2 (##) HANYA untuk subjudul.
+3. [FAQ]: Di akhir artikel, buat judul **FAQ**. Buat ${faqCountRule} yang relevan (tidak mengulang isi artikel). Formatnya:
    Q: [Pertanyaan]
    A: [Jawaban 30-80 kata]
-3. [REFERENSI]: Di bawah FAQ, buat judul **Referensi:** lalu sebutkan sumbernya.`;
+4. [REFERENSI]: Di bawah FAQ, buat judul **Referensi:** lalu sebutkan sumbernya.`;
 
       setStreamedText('');
       
@@ -300,24 +312,49 @@ Output Anda harus HANYA berisi Markdown murni tanpa basa-basi pembuka/penutup, t
         setStreamedText(text);
       }
 
-      let mainContent = text;
+      let mainContent = text.trim();
       let refs = '';
       let rawFaq = '';
+      let generatedTitle = '';
       
-      const refMatch = mainContent.match(/(?:\*\*)?Referensi:(?:\*\*)?\s*([\s\S]*)/i);
+      const titleMatch = mainContent.match(/(?:^|\n).*?(?:\[JUDUL ARTIKEL\]|Judul)\s*:?\s*(.*?)(?=\n|$)/i);
+      if (titleMatch) {
+        generatedTitle = titleMatch[1].replace(/\*\*/g, '').trim();
+      }
+
+      // Cleanup tags
+      mainContent = mainContent.replace(/(?:^|\n).*?(?:\[JUDUL ARTIKEL\]|Judul)\s*:?\s*(.*?)(?=\n|$)/ig, '');
+      mainContent = mainContent.replace(/.*(?:\[KONTEN ARTIKEL\]|KONTEN).*?(?=\n)/ig, '').trim();
+
+      // Fallback: Jika AI mengabaikan tag dan langsung menulis judul di baris pertama tanpa bold
+      if (!generatedTitle) {
+        const firstLine = mainContent.split('\n')[0].trim();
+        if (firstLine.length > 5 && firstLine.length < 150 && !firstLine.includes('**')) {
+           generatedTitle = firstLine.replace(/^#+\s*/, '');
+           mainContent = mainContent.replace(firstLine, '').trim();
+        }
+      }
+
+      const refMatch = mainContent.match(/(?:^|\n)(?:#+\s*)?(?:\*\*|\[)?Referensi(?:\*\*|\])?\s*:?\s*\n?([\s\S]*)/i);
       if (refMatch) {
         refs = refMatch[1].trim();
         mainContent = mainContent.substring(0, refMatch.index).trim();
       }
 
-      const faqMatch = mainContent.match(/(?:#+\s*)?(?:\*\*)?FAQ(?:\*\*)?\s*\n([\s\S]*)/i);
+      const faqMatch = mainContent.match(/(?:^|\n)(?:#+\s*)?(?:\*\*|\[)?FAQ(?:\*\*|\])?\s*:?\s*\n([\s\S]*)/i);
       if (faqMatch) {
         rawFaq = faqMatch[1].trim();
         mainContent = mainContent.substring(0, faqMatch.index).trim();
       }
 
-      setTitle(topic);
-      setSlug(topic.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, ''));
+      if (generatedTitle) {
+        setTitle(generatedTitle);
+        setSlug(generatedTitle.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, ''));
+      } else {
+        // Fallback to topic
+        setTitle(topic);
+        setSlug(topic.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, ''));
+      }
       setInitialContent(mainContent);
       setReferencesText(refs);
       setFaqText(rawFaq);

@@ -17,9 +17,10 @@ const DEFAULT_MENU_ORDER = [
   { id: 'log-process',  name: 'Log Process',        icon: 'receipt_long',      path: '/cms/log-process', permission: 'editor',     section: 'main', visible: true, order: 8 },
   // Bottom Nav
   { id: 'categories',   name: 'Parameter Kategori', icon: 'category',          path: '/cms/categories',  permission: 'settings', section: 'bottom', visible: true, order: 1 },
-  { id: 'menu-order',   name: 'Urutan Menu',        icon: 'reorder',           path: '/cms/menu-order',  permission: 'settings', section: 'bottom', visible: true, order: 2 },
-  { id: 'parameters',   name: 'Data Parameter',     icon: 'tune',              path: '/cms/parameters',  permission: 'settings', section: 'bottom', visible: true, order: 3 },
-  { id: 'roles',        name: 'Role Manager',       icon: 'admin_panel_settings', path: '/cms/roles',   permission: 'manage_roles', section: 'bottom', visible: true, order: 4 },
+  { id: 'home-editor',  name: 'Layout Beranda',     icon: 'view_quilt',        path: '/cms/home-editor', permission: 'settings', section: 'bottom', visible: true, order: 2 },
+  { id: 'menu-order',   name: 'Urutan Menu',        icon: 'reorder',           path: '/cms/menu-order',  permission: 'settings', section: 'bottom', visible: true, order: 3 },
+  { id: 'parameters',   name: 'Data Parameter',     icon: 'tune',              path: '/cms/parameters',  permission: 'settings', section: 'bottom', visible: true, order: 4 },
+  { id: 'roles',        name: 'Role Manager',       icon: 'admin_panel_settings', path: '/cms/roles',   permission: 'manage_roles', section: 'bottom', visible: true, order: 5 },
 ];
 
 function initialize() {

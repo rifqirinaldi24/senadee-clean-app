@@ -263,7 +263,14 @@ export default function CategoryParameterPage() {
                   <label className="block font-label-md text-label-md font-semibold text-on-surface mb-1.5">Icon (Emoji)</label>
                   <input type="text" value={form.icon} onChange={(e) => setForm({...form, icon: e.target.value})}
                     placeholder="📄"
-                    className="w-full px-4 py-2.5 bg-surface border border-border-muted rounded-xl font-body-md text-body-md text-on-surface focus:ring-2 focus:ring-primary focus:border-transparent outline-none" />
+                    className="w-full px-4 py-2.5 bg-surface border border-border-muted rounded-xl font-body-md text-body-md text-on-surface focus:ring-2 focus:ring-primary focus:border-transparent outline-none mb-2" />
+                  <div className="flex flex-wrap gap-1">
+                    {['🌿','🏃','✨','🤰','👨‍👩‍👧‍👦','⚕️','👴','🧠','🥗','🚑','🦷','👁️','🦴','💊','🦠','🩸','👶','🍏','🧘','🏥'].map(emoji => (
+                      <button type="button" key={emoji} onClick={() => setForm({...form, icon: emoji})} className="text-[22px] p-1.5 hover:bg-surface-container rounded-lg cursor-pointer transition-colors border border-transparent hover:border-border-muted" title="Pilih icon ini">
+                        {emoji}
+                      </button>
+                    ))}
+                  </div>
                 </div>
                 <div>
                   <label className="block font-label-md text-label-md font-semibold text-on-surface mb-1.5">Warna</label>

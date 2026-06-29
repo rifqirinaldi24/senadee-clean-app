@@ -10,6 +10,8 @@ import StickyTableOfContents from '../components/ui/StickyTableOfContents';
 import RelatedArticles from '../components/ui/RelatedArticles';
 
 marked.use({
+  breaks: true,
+  gfm: true,
   renderer: {
     heading(text, level) {
       const id = text.toLowerCase().replace(/[^\w\u00C0-\u024F]+/g, '-');
@@ -91,7 +93,7 @@ export default function ArticleDetailPage() {
 
       <article className="min-h-screen bg-surface pb-20">
         {/* Article Header */}
-        <header className="pt-24 lg:pt-32 pb-10 bg-surface-container-lowest border-b border-surface-container">
+        <header className="pt-24 lg:pt-32 pb-6 lg:pb-8 bg-surface-container-lowest border-b border-surface-container">
           <div className="max-w-3xl mx-auto px-4 sm:px-6">
             {/* Category Breadcrumb */}
             {pillar && (
@@ -128,61 +130,73 @@ export default function ArticleDetailPage() {
             )}
 
               {/* Author & Reviewer Info */}
-              <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-6 py-6 border-y border-surface-container bg-surface-container-lowest mt-4 mb-8">
-                <div className="flex flex-col sm:flex-row flex-wrap gap-6 sm:gap-10">
+              <div className="flex flex-col gap-4 mt-8 mb-2">
+                
+                {/* ROW 1: Medical Verification Card (Eye-catching) */}
+                {(article.reviewer || article.isVerified) && (
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 rounded-xl bg-gradient-to-r from-tertiary/10 to-transparent border border-tertiary/20">
+                    {article.reviewer && (
+                      <div className="flex items-center gap-3">
+                        <div className="w-12 h-12 shrink-0 rounded-full bg-surface shadow-sm text-tertiary flex items-center justify-center font-bold text-lg font-heading border border-tertiary/20">
+                          {article.reviewer?.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase()}
+                        </div>
+                        <div className="flex flex-col">
+                          <span className="text-xs font-bold text-tertiary uppercase tracking-wider mb-0.5 flex items-center gap-1">
+                            <span className="material-symbols-outlined text-[14px]">verified_user</span>
+                            Ditinjau Oleh Medis
+                          </span>
+                          <span className="text-base font-bold text-on-surface">dr. {article.reviewer}</span>
+                        </div>
+                      </div>
+                    )}
+                    
+                    {article.isVerified && (
+                      <div className="shrink-0 self-start sm:self-center">
+                        <HumanVerifiedBadge size="default" />
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* ROW 2: Author and Date (Subtle) */}
+                <div className="flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-8 px-2 py-2">
                   {/* Author */}
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-full bg-primary-container text-primary flex items-center justify-center font-bold text-sm font-heading">
+                    <div className="w-10 h-10 shrink-0 rounded-full bg-surface-container text-on-surface-variant flex items-center justify-center font-bold text-sm font-heading">
                       {article.author?.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase()}
                     </div>
                     <div className="flex flex-col">
                       <span className="text-xs font-bold text-on-surface-variant uppercase tracking-wider mb-0.5">Ditulis Oleh</span>
-                      <span className="text-sm font-bold text-on-surface">{article.author}</span>
+                      <span className="text-sm font-medium text-on-surface">{article.author}</span>
                     </div>
                   </div>
-  
-                  {/* Reviewer */}
-                  {article.reviewer && (
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-full bg-tertiary-container text-tertiary flex items-center justify-center font-bold text-sm font-heading">
-                        {article.reviewer?.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase()}
-                      </div>
-                      <div className="flex flex-col">
-                        <span className="text-xs font-bold text-on-surface-variant uppercase tracking-wider mb-0.5">Ditinjau Oleh</span>
-                        <span className="text-sm font-bold text-on-surface">dr. {article.reviewer}</span>
-                      </div>
-                    </div>
-                  )}
-  
+
                   {/* Date */}
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-full bg-surface-container text-on-surface flex items-center justify-center">
+                    <div className="w-10 h-10 shrink-0 rounded-full bg-surface-container text-on-surface-variant flex items-center justify-center">
                       <span className="material-symbols-outlined text-[18px]">calendar_today</span>
                     </div>
                     <div className="flex flex-col">
                       <span className="text-xs font-bold text-on-surface-variant uppercase tracking-wider mb-0.5">Diperbarui</span>
-                      <span className="text-sm font-bold text-on-surface">{formatDate(article.date)}</span>
+                      <span className="text-sm font-medium text-on-surface">{formatDate(article.date)}</span>
                     </div>
                   </div>
                 </div>
-  
-                {/* Verified Badge */}
-                {article.isVerified && (
-                  <div className="shrink-0 flex items-center">
-                    <HumanVerifiedBadge size="default" />
-                  </div>
-                )}
               </div>
           </div>
         </header>
 
         {/* Article Body Wrapper */}
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-10 sm:py-14">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8 sm:py-10">
           <div className="flex flex-col lg:flex-row gap-10 xl:gap-16 items-start">
             
             {/* Left Sidebar: Sticky TOC */}
             <div className="hidden lg:block lg:w-1/4 xl:w-[280px] shrink-0 sticky top-28">
-              <StickyTableOfContents markdownContent={fullMarkdown} />
+              <StickyTableOfContents 
+                markdownContent={fullMarkdown} 
+                hasReferences={!!article.references}
+                hasFaq={!!article.faq && article.faq.length > 0}
+              />
             </div>
 
             {/* Main Article Content */}
@@ -197,7 +211,7 @@ export default function ArticleDetailPage() {
 
               {/* References */}
               {article.references && (
-                <div className="mt-12 p-5 sm:p-6 bg-surface-container-lowest border border-surface-container shadow-sm rounded-2xl">
+                <div id="referensi" className="scroll-mt-28 mt-12 p-5 sm:p-6 bg-surface-container-lowest border border-surface-container shadow-sm rounded-2xl">
                   <h3 className="font-heading font-bold text-xl text-on-surface mb-4 flex items-center gap-2">
                     <span className="material-symbols-outlined text-primary">local_library</span>
                     Referensi Medis
@@ -211,7 +225,7 @@ export default function ArticleDetailPage() {
 
               {/* FAQ Accordion Card */}
               {article.faq && article.faq.length > 0 && (
-                <div className="mt-10 bg-surface-container-lowest border border-surface-container shadow-sm rounded-2xl overflow-hidden">
+                <div id="faq" className="scroll-mt-28 mt-10 bg-surface-container-lowest border border-surface-container shadow-sm rounded-2xl overflow-hidden">
                   <div className="p-5 sm:p-6 border-b border-surface-container bg-surface-container-lowest">
                     <h3 className="font-heading font-bold text-xl text-on-surface flex items-center gap-2">
                       <span className="material-symbols-outlined text-primary">live_help</span>
